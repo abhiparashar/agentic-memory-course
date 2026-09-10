@@ -8,6 +8,74 @@
 
 ---
 
+## 3.0 In plain words
+
+You have 50,000 stored sentences. The user asks a question. You are allowed to paste three
+sentences into the prompt. Which three?
+
+Two ways to pick, and they fail on opposite queries.
+
+**Librarian A matches words.** She scans for the literal terms in your question. Ask for
+"ACC-77213" and she finds it instantly, because that string appears in exactly one place. Ask
+"where can I eat with no meat" and she finds nothing, because the stored sentence says
+"vegetarian" and no word matches. This is **BM25** / lexical search.
+
+**Librarian B matches meaning.** Every sentence has been converted to a list of numbers — a
+*vector* — positioned so that sentences about similar things sit near each other. She converts
+your question the same way and returns the nearest neighbours. She nails the vegetarian
+paraphrase and completely fumbles "ACC-77213", because a random identifier has no meaning to be
+near. This is **dense / vector / semantic search**.
+
+The whole chapter follows from that: **hire both librarians, then merge their lists.** Cursor
+reached the same conclusion in production after shipping a custom-trained retrieval model — "our
+agent makes heavy use of grep as well as semantic search, and the combination of these two leads
+to the best outcomes" ([cursor.com/blog/semsearch](https://cursor.com/blog/semsearch), Nov 2025).
+
+### An embedding in eight lines
+
+No magic. Text in, fixed-length list of floats out, and "similar" means "small angle between the
+vectors":
+
+```python
+import math
+
+def cosine(a, b):
+    """1.0 = identical direction, 0.0 = unrelated, -1.0 = opposite."""
+    dot = sum(x * y for x, y in zip(a, b))
+    return dot / (math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(y * y for y in b)))
+
+veg   = [0.9, 0.1, 0.0]   # "user is vegetarian"   (pretend these came from an encoder)
+food  = [0.8, 0.2, 0.0]   # "suggest somewhere to eat"
+weather = [0.0, 0.1, 0.9] # "what's the weather"
+
+cosine(veg, food)      # ≈ 0.99  -> retrieved
+cosine(veg, weather)   # ≈ 0.05  -> ignored
+```
+
+Real encoders produce 384–3072 dimensions instead of 3, and they *learn* the positions from
+billions of text pairs. That is the only difference.
+
+### The four stages, in plain words
+
+```
+1. CANDIDATES  cast a wide net, cheaply.   50k memories -> ~50   (BM25 + vectors + graph)
+2. FUSE        merge the lists fairly.     ~50 -> ~50 ranked     (RRF)
+3. RERANK      re-score the survivors      ~50 -> ~10            (cross-encoder, expensive)
+               expensively and accurately.
+4. TRIM        fit the token budget,       ~10 -> 3              (MMR + budget)
+               drop near-duplicates.
+```
+
+Every stage exists to spend compute where it pays. Stage 1 is cheap and sloppy over everything;
+stage 3 is expensive and sharp over almost nothing. Getting this funnel shape right matters more
+than any individual model choice.
+
+**The one-sentence takeaway:** recall is a stage-1 problem, precision is a stage-3 problem, and
+the number of tokens you finally inject is a stage-4 problem — three different fixes, so always
+find out which stage is failing before you tune anything.
+
+---
+
 ## 3.1 Why memory retrieval ≠ document RAG
 
 You will read a lot of RAG material. Most of it assumes a static corpus of documents. Memory
@@ -138,10 +206,49 @@ A multi-layer proximity graph. The one you will usually use.
 - `ef_search` — candidate list at query time. **The runtime recall/latency dial.** Tune this per
   query class; it is the knob you expose.
 
-The filtering problem again: HNSW with a post-filter can return nothing if your filter is selective.
-Pre-filtering requires index support (filtered HNSW / ACORN-style traversal). **In memory systems
-your filter is almost always highly selective** (one user out of millions). Check that your store
-does pre-filtering properly, or partition physically so the filter is implicit.
+#### What the dial actually costs — a published curve
+
+Supabase benchmarked pgvector HNSW on 1M OpenAI 1536-dim vectors (`dbpedia-entities-openai-1M`).
+With build params `m=24, ef_construction=56`, reaching **accuracy@10 = 0.98 required raising
+`ef_search` from the default 40 to 100**, and **0.99 required 250**
+([supabase.com/blog/increase-performance-pgvector-hnsw](https://supabase.com/blog/increase-performance-pgvector-hnsw)).
+
+Then the sentence to tattoo on your wall: rebuilding with `m=32, ef_construction=80` reached the
+same **0.99 accuracy at `ef_search` = 100 instead of 250, a 35% QPS increase**. Same recall,
+one-off build cost, permanently cheaper queries.
+
+> **Pay at build time or pay on every query, forever.** For agent memory — read-heavy, written
+> once per session — build-time is almost always the right place to pay.
+
+Two operational notes from the same benchmark that matter for memory workloads specifically:
+
+- Postgres needed **~30–35 GB RAM** for optimal performance on that 1M-vector set. If the index
+  does not fit in memory, your p99 is disk latency, and no parameter fixes that.
+- **IVFFlat's clusters depend on the existing data distribution**, so the index must be built
+  after loading and rebuilt as the distribution shifts. **HNSW can be created on an empty table**
+  and stays reasonable as rows arrive. Agent memory grows continuously and forever, which is a
+  structural argument for HNSW over IVF that has nothing to do with recall.
+
+#### Why filtered ANN breaks, in one idea
+
+Qdrant's write-up on filterable HNSW gives the cleanest explanation, and it is worth internalising
+because "just add a filter" is the single most common memory-retrieval bug
+([qdrant.tech/articles/filterable-hnsw](https://qdrant.tech/articles/filterable-hnsw/)):
+filtering nodes out of an HNSW graph is **node removal on a random graph**, which is percolation.
+There is a critical threshold around **`pc = 1/⟨k⟩`** (⟨k⟩ being average node degree) below which
+the graph **fragments into disconnected components** — so search does not degrade gracefully, it
+fails abruptly, and the threshold moves with your `M` parameter. Connectivity depends on edge
+count, not on how many points you have.
+
+Their fix is instructive: build **additional intra-category edges** using the same construction
+algorithm and merge them in, which grows total edges by **at most 2× regardless of how many
+categories exist**. And they select strategy by selectivity, exactly like a query planner — tiny
+subset → filter then scan; large subsets with large intersection → filtered graph search; large
+subsets with small intersection → linear scan over the intersection.
+
+For agent memory the mapping is direct: `tenant_id` *is* your category, and it is brutally
+selective. Either your store does real pre-filtering, or you partition physically so the filter
+is implicit — those are the only two correct answers.
 
 ### Quantisation
 
@@ -185,6 +292,32 @@ scores = bm25.get_scores(tok(query))
 
 In Postgres you get this for free with `tsvector` + GIN, in the same transaction as your vectors —
 another argument for starting there.
+
+### The production evidence, and a technique worth stealing
+
+Cursor shipped semantic search *alongside* grep in their coding agent and published both offline
+and online results ([cursor.com/blog/semsearch](https://cursor.com/blog/semsearch), Nov 2025):
+
+- Offline, on their internal Cursor Context Bench: **+12.5% accuracy on average**, range
+  **6.5%–23.5% depending on the model**, improving *every* model tested including frontier
+  coding models.
+- Online A/B with real users: agent **code retention +0.3%** overall, but **+2.6% on codebases
+  with 1,000+ files**, and **+2.2% more dissatisfied follow-up requests when semantic search was
+  absent**.
+
+Two lessons. First, the aggregate online number (+0.3%) is small and the segmented one (+2.6% on
+large repos) is not — **retrieval wins are concentrated where the haystack is big**, which is
+precisely the memory case, and which is why you must segment your eval (chapter 08) or you will
+conclude your improvement did nothing.
+
+Second, and more interesting: they did not use an off-the-shelf embedding model. They **trained
+one on their own agent session traces** — an LLM looks back over a finished session and ranks
+what *should* have been retrieved earlier, and the embedding model is trained to align its
+similarity scores with those retrospective rankings. That is retrieval learned from agent
+behaviour rather than from generic text similarity, and it is the single most transferable
+advanced idea in this chapter: **your logs contain the labels.** You cannot do this on day one,
+but the moment you have traffic, your own sessions are a better training set than any public
+corpus.
 
 ---
 
