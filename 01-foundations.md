@@ -6,6 +6,66 @@
 
 ---
 
+## 1.0 In plain words (read this first)
+
+Imagine hiring a brilliant consultant with total amnesia. Every morning they arrive knowing
+everything about the world and *nothing* about you. Before each meeting, someone has to hand
+them a one-page brief: who you are, what you decided last time, what is still open.
+
+The consultant is the model. **The person writing the brief is the memory layer.** This course
+is about writing that brief: what goes on the page, where the facts come from, how you keep them
+true, and how you prove the brief was good.
+
+Three sentences that carry the whole chapter:
+
+1. The model is a pure function. Same input, same output, no memory of yesterday.
+2. So "remembering" is something *your code* does, before the call, by choosing tokens.
+3. Choosing well is a storage + retrieval + consistency problem, which is why this is systems
+   engineering and not prompt writing.
+
+If you have not read `00-why-memory.md`, read it before this. It is the argument for why the
+layer exists at all; this chapter is the vocabulary for building it.
+
+### The words everyone uses and nobody defines
+
+Keep this table open for the first three chapters. Most confusion in this field is two people
+using one of these words to mean two different things.
+
+| Word | Plain meaning | Not to be confused with |
+|---|---|---|
+| **Context window** | The list of tokens you send in one API call | Memory. The window is a *request*; memory is a *store*. |
+| **Working memory** | Whatever is in the window right now | Long-term memory |
+| **Session memory** | Server-side state for one conversation | Long-term memory across conversations |
+| **Long-term memory** | A database row that outlives the conversation | The model's weights |
+| **Episodic memory** | "What happened", timestamped, raw | Semantic memory |
+| **Semantic memory** | A distilled fact: *user is vegetarian* | **Semantic search**, which is a retrieval *method*. LangChain's own docs flag this exact collision. |
+| **Procedural memory** | "How to do things here" — usually a file of rules | Facts about the user |
+| **Write path** | Code that decides what to store and how to fix contradictions | Ingestion in classic RAG |
+| **Read path** | Code that decides what to inject this turn | The model's attention |
+| **Compaction** | Replacing a long transcript with a summary and continuing | Deletion |
+| **Consolidation** | Merging several related memories into one, offline | Compaction (that is about the transcript, this is about the store) |
+| **Provenance** | The record of *where a memory came from* | Confidence |
+| **Bi-temporal** | Storing both "true in the world from→to" and "we believed it from→to" | A single `updated_at` column |
+| **Salience** | The decision "is this worth remembering at all" | Relevance, which is a *read*-time decision |
+
+### Statelessness, in six lines you can run
+
+```python
+def call_model(messages):
+    """Pretend this is an API call. The only thing the model ever sees is `messages`."""
+    return f"[model saw {sum(len(m['content']) for m in messages)} chars of input]"
+
+call_model([{"role": "user", "content": "My name is Priya."}])
+call_model([{"role": "user", "content": "What is my name?"}])   # -> no idea. None.
+```
+
+There is no channel between those two calls. None. Not a cookie, not a session id, not a hidden
+cache. If the second call is to know the name, *some code you wrote* has to put the string
+"Priya" into the second `messages` list. Everything else in this course is the elaboration of
+that one sentence.
+
+---
+
 ## 1.1 The stateless function
 
 Strip away the SDKs and an LLM call is:
@@ -140,6 +200,36 @@ from a fact to its source episodes and from an episode to its derived facts. Cop
 Mixing these into one store is the single most common architectural mistake I see. They have
 different retention policies, different access controls, different deletion semantics, and different
 staleness tolerances. Give them separate namespaces from day one even if they share a table.
+
+What "separate namespaces" means concretely — a key structure, not a comment in a design doc:
+
+```python
+from typing import NamedTuple
+
+class MemKey(NamedTuple):
+    tenant: str     # the isolation boundary. Every query filters on it. Never optional.
+    subject: str    # WHO the memory is about: "user:42" | "agent" | "org:acme" | "task:job_9"
+    kind: str       # WHAT it is: "semantic" | "episodic" | "procedural"
+    category: str   # the typed slot: "diet" | "employer" | "deploy_rule"
+
+MemKey("acme", "user:42", "semantic", "diet")      # deletable on user request
+MemKey("acme", "agent",   "procedural", "tone")    # survives user deletion
+MemKey("acme", "org:acme","semantic", "policy")    # shared; needs different ACLs
+```
+
+Now "delete everything about user 42" is a prefix scan, not an archaeology project. Two
+independent products landed on exactly this shape: LangGraph's `BaseStore` keys memories by a
+**namespace tuple** such as `(user_id, "preferences")`, and AWS AgentCore Memory writes every
+extracted long-term memory under a configured **namespace** path scoped by `actorId`
+([AgentCore memory organization](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/memory-organization.html)).
+When two unrelated teams pick the same primitive, it is because deletion and isolation force it.
+
+Getting this wrong has a specific, expensive symptom, and OpenAI documents it from the user's
+side: because memories are stored *separately* from chats, "deleting a chat doesn't erase its
+memories; you must delete the memory itself"
+([Memory and new controls for ChatGPT](https://openai.com/index/memory-and-new-controls-for-chatgpt/)).
+That is not a bug — it is the unavoidable consequence of derived state. Chapter 09 is about
+making it tractable rather than surprising.
 
 ---
 

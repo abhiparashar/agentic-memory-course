@@ -5,6 +5,33 @@
 
 ---
 
+## 2.0 In plain words
+
+You have one page. Not a filing cabinet — one page, and you must hand it to the consultant
+before every meeting.
+
+That is the context window. It is small, it is expensive per word, and — the part that surprises
+people — **filling it with extra stuff makes the answers worse, not just slower.** So the job of
+this chapter is the librarian's job: decide what goes on the page, and what to do when the
+conversation is longer than the page.
+
+There are only four moves. Everything in production is a combination of these:
+
+| Move | Plain description | Cost of the move |
+|---|---|---|
+| **Truncate** | Drop the oldest turns | You silently lose facts. Cheapest, dumbest. |
+| **Summarise / compact** | Replace old turns with a shorter recap | You lose specifics — exact IDs, numbers, negations. |
+| **Externalise** | Write it to a file or DB and fetch later | You now need retrieval, and retrieval can miss. |
+| **Isolate** | Give a sub-task its own fresh window; keep only its answer | You lose the sub-task's reasoning; coordination gets harder. |
+
+Nothing here is free. Every one of the four trades a different kind of information loss for
+space. Knowing *which* loss you just chose is the whole skill.
+
+A useful mental model before the detail: **the context window is a CPU register file, not a hard
+disk.** Small, fast, and every byte should be there for a reason.
+
+---
+
 ## 2.1 The context window is a budget, so budget it
 
 Stop thinking of the prompt as a string. Think of it as an allocation table.
@@ -204,8 +231,49 @@ loses fidelity.
 
 ## 2.3 Context rot and the anti-patterns it creates
 
-Empirically, accuracy degrades as the window fills, and past a threshold it can fall sharply. That
-means several "obviously helpful" behaviours are actively harmful:
+Accuracy degrades as the window fills, and past a threshold it can fall sharply rather than
+gradually. That single fact invalidates several "obviously helpful" behaviours. First the
+evidence, then the anti-patterns.
+
+### The evidence, precisely
+
+Do not argue this from vibes; the measurement exists. Chroma's *Context Rot* report evaluated
+**18 models** (GPT-4.1, Claude 4, Gemini 2.5, Qwen3 and others) across 8 input lengths × 11
+needle positions, deliberately **holding task complexity constant** so that input length was the
+only variable ([research.trychroma.com/context-rot](https://research.trychroma.com/context-rot),
+Jul 2025). Four findings you should be able to quote:
+
+1. Models "do not use their context uniformly; instead, their performance grows increasingly
+   unreliable as input length grows."
+2. **Needle–question similarity matters more as context grows.** When the stored fact is worded
+   differently from the question, long context hurts more. This is a direct argument for the
+   *rendering* work in 2.5 — phrase memories the way questions will be phrased.
+3. **Distractor damage amplifies with length.** A distractor is content that is topically related
+   but does not answer the question. Your own conversation history is a distractor factory.
+4. **The haystack is not inert.** Shuffling the filler sentences — same topic, no logical
+   continuity — changed performance measurably.
+
+One correction the report also delivers, worth knowing so you do not overclaim: in their NIAH
+setup, needle *position* showed no notable effect. "Lost in the middle" is a real phenomenon in
+some settings, but it is not the mechanism behind context rot.
+
+And the multi-fact trap, which single-needle benchmarks hide. Google's own long-context docs
+state that NIAH tests a single needle and that with multiple needles "the model does not perform
+with the same accuracy" ([Gemini long
+context](https://ai.google.dev/gemini-api/docs/long-context)). Do the arithmetic yourself:
+
+```python
+per_fact = 0.99          # generous single-needle accuracy
+for n in (1, 5, 20, 100):
+    print(n, round(per_fact ** n, 3))
+# 1 0.99   5 0.951   20 0.818   100 0.366
+```
+
+Real memory questions are rarely single-needle. "Book me dinner near the office" needs diet,
+city, current employer, and the fact that the city changed last month — four needles, and
+`0.99**4` is already a 96% ceiling before your retriever has made a single mistake.
+
+### The anti-patterns it creates
 
 **Anti-pattern: dumping full tool outputs.** A 30k-token API response of which 200 tokens matter is
 a 29.8k-token distractor. Post-process tool results before they enter the window. Better: use
@@ -221,6 +289,17 @@ distractors after the first few turns. Prefer short, canonical examples, or move
 
 **Anti-pattern: keeping failed tool call traces verbatim.** Keep the *lesson* ("v3 batch API
 unavailable in region"), drop the 4k-token stack trace.
+
+> **A dissent worth taking seriously.** Manus argues the opposite — *"keep the wrong stuff in"* —
+> because leaving failed actions and their errors in context shifts the model's prior away from
+> repeating them, and "error recovery is one of the clearest indicators of true agentic
+> behaviour" ([Lessons from Building
+> Manus](https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Manus),
+> Jul 2025). Both are right about different objects: keep the *fact of the failure and its
+> shape*, drop the *bytes*. The reconciliation is a `dead_ends` note (2.4, 06.2) — one line per
+> failed approach, permanent, cheap. That is also why Manus's other technique, **recitation**
+> (rewriting `todo.md` every step so the plan re-enters recent attention on a ~50-tool-call
+> task), works: it is a deliberate, bounded re-injection instead of an accidental unbounded one.
 
 ### Context collapse
 
@@ -256,7 +335,40 @@ Run it in CI on recorded transcripts. Treat a regression in "identifiers lost" a
 ## 2.4 Prefix caching: the constraint that shapes your layout
 
 Providers cache the prefix of your prompt. Cache hits are dramatically cheaper and faster. The
-implication is architectural:
+implication is architectural.
+
+### The numbers, so you can do the arithmetic
+
+These are the mechanics as documented in September 2026 — re-check them, but the *shape* has been
+stable for two years:
+
+| Provider | What it costs | Minimum cacheable prefix | Lifetime |
+|---|---|---|---|
+| OpenAI (GPT-5.6+) | cache **write 1.25×** list input, **read 0.1×** | **1,024** visible input tokens | `ttl: "30m"`; older models `in_memory` (~5–10 min idle) or `24h` ([docs](https://developers.openai.com/api/docs/guides/prompt-caching)) |
+| Gemini 2.5+ | implicit caching **on by default**, savings passed through automatically | **4,096** tokens (Gemini 3.x Flash / 3.1 Pro), **2,048** (2.5 Flash/Pro) | provider-managed ([docs](https://ai.google.dev/gemini-api/docs/caching)) |
+
+The OpenAI doc spells out the economics in a form you can put in a design doc: one write plus one
+full read is **1.35×** the uncached price of a single call, versus **2×** if you sent it twice
+uncached; across ten requests it is **2.15× versus 10×**. So caching is worth it from the second
+call, and *hugely* worth it in an agent loop.
+
+Two mechanical details that bite:
+
+- The cache stores **KV tensors, not tokens** — reuse requires the *entire rendered prefix* to
+  match byte-for-byte. "Almost the same prompt" is a cache miss.
+- Settings can break the cache even with identical text. OpenAI names `model`, `tools`,
+  `parallel_tool_calls`, `text.format`, `reasoning.effort`, `text.verbosity` and
+  `context_management` as cache-breaking. Anthropic's context-editing docs say the same thing
+  from the other direction: **tool-result clearing invalidates cached prefixes**, so they expose
+  `clear_at_least` to guarantee you clear enough tokens to be worth the re-write cost
+  ([context editing](https://platform.claude.com/docs/en/build-with-claude/context-editing)).
+
+This is why Manus calls KV-cache hit rate "the single most important metric for a
+production-stage AI agent": their input:output token ratio is about **100:1**, and their cited
+price delta between cached and uncached input was **10×**. Their three rules are worth adopting
+verbatim: keep the prefix stable (they note that a **second-precision timestamp at the top of
+the system prompt destroys your hit rate**), make context **append-only** with deterministic JSON
+key ordering, and place explicit cache breakpoints at least at the end of the system prompt.
 
 **Order your context from most-stable to least-stable.**
 
