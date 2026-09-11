@@ -23,7 +23,7 @@ Single source of truth for what is written, what is still first-draft, and where
 | 04 | `04-memory-write-path.md` | ✅ deep | 1107 | Notebook opener, gate cascade (with the two regex bugs it fixes), worked extraction example, threshold calibration script, supersession trace, destructive budget, confidence calibration, cost model, 12 scenarios + gate recall set, failure table |
 | 05 | `05-temporal-and-graph-memory.md` | ✅ deep | 680 | Two-clocks opener, SQLite-verified bitemporal queries (truth-vs-belief divergence), DB invariants, interval repair (overlap/gap/extend), honest graph decision rule, Graphiti properties cited from source |
 | 06 | `06-procedural-and-reflective.md` | ✅ deep | 527 | Recall arithmetic for why rules belong in context (0.9^N), rule precedence + token budget, `rule_health` for superstition, reflection quality gate, sleep-time-compute numbers and when it does NOT pay, trajectory distillation, hints≠permissions |
-| 07 | `07-systems-design.md` | 🟡 draft | 415 | Needs: latency budget table with real p99 arithmetic, sharding worked example, backfill runbook |
+| 07 | `07-systems-design.md` | ✅ deep | 995 | Library-counter opener, real PG16 RLS lab (owner + superuser bypass, fail-closed GUC, partition pruning under RLS), verified percentile composition, the `TaskGroup` deadline bug measured at 901ms vs 120ms budget, Little's-law capacity plan, shard-balance simulation, M/M/1 freshness arithmetic, priced cost model, re-embedding runbook, citation-rate instrument |
 | 08 | `08-evaluation.md` | 🟡 draft | 331 | Needs: LoCoMo/LongMemEval/BEAM specifics with links, a runnable harness, CI gate thresholds |
 | 09 | `09-security-privacy-governance.md` | 🟡 draft | 348 | Needs: injection→memory-poisoning worked attack, GDPR cascade checklist across derived state |
 | 10 | `10-case-studies.md` | 🟡 draft | 344 | Needs: re-verified snapshots (this file churns fastest), architecture diagrams per system |
@@ -36,16 +36,12 @@ Single source of truth for what is written, what is still first-draft, and where
 
 ## Resume here
 
-**Next chapter to deepen: `07-systems-design.md`.** Then 08, 09, 10, then the practice files
-11–14. Deep passes done so far: 00–06.
+**Next chapter to deepen: `08-evaluation.md`.** Then 09, 10, then the practice files
+11–14. Deep passes done so far: 00–07.
 
 What each remaining file needs (keep the same shape as 04/05/06):
 
-- **07 — systems design.** `7.0 In plain words` (the memory service as a library counter: one
-  request, a 120ms budget, and what you cut when you run out). Verified latency-budget arithmetic,
-  a worked capacity plan for the 7.1 workload, RLS + repository-layer isolation with the CI test,
-  the re-embedding migration runbook, the citation-based "is memory even used" metric, failure-mode
-  table. Existing draft already has good bones for 7.1–7.10 — deepen, do not discard.
+- **07 — systems design.** DONE (2026-09-12).
 - **08 — evaluation.** Cite LoCoMo ([arXiv:2402.17753](https://arxiv.org/abs/2402.17753)),
   LongMemEval ([arXiv:2410.10813](https://arxiv.org/abs/2410.10813)), and the Mem0/Zep results
   already cited in 04/05. Build a runnable offline harness (recall@k + end-to-end judge), define CI
@@ -97,3 +93,4 @@ What each remaining file needs (keep the same shape as 04/05/06):
 | 2026-09-10 | `d847689` | Chapter 04 deep pass + this progress tracker |
 | 2026-09-12 | `f28dbb1` | Chapter 05 deep pass: two clocks, SQL-verified bitemporal queries, interval repair |
 | 2026-09-12 | `017f19d` | Chapter 06 deep pass: procedural recall arithmetic, sleep-time compute, trajectory safety |
+| 2026-09-12 | `(this)` | Chapter 07 deep pass: verified RLS isolation lab, latency composition, capacity/shard/cost arithmetic, deadline bug |
