@@ -93,4 +93,4 @@ What each remaining file needs (keep the same shape as 04/05/06):
 | 2026-09-10 | `d847689` | Chapter 04 deep pass + this progress tracker |
 | 2026-09-12 | `f28dbb1` | Chapter 05 deep pass: two clocks, SQL-verified bitemporal queries, interval repair |
 | 2026-09-12 | `017f19d` | Chapter 06 deep pass: procedural recall arithmetic, sleep-time compute, trajectory safety |
-| 2026-09-12 | `(this)` | Chapter 07 deep pass: verified RLS isolation lab, latency composition, capacity/shard/cost arithmetic, deadline bug |
+| 2026-09-12 | `85964f9` | Chapter 07 deep pass: verified RLS isolation lab, latency composition, capacity/shard/cost arithmetic, deadline bug |
