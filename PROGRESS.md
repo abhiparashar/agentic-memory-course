@@ -26,7 +26,7 @@ Single source of truth for what is written, what is still first-draft, and where
 | 07 | `07-systems-design.md` | ✅ deep | 995 | Library-counter opener, real PG16 RLS lab (owner + superuser bypass, fail-closed GUC, partition pruning under RLS), verified percentile composition, the `TaskGroup` deadline bug measured at 901ms vs 120ms budget, Little's-law capacity plan, shard-balance simulation, M/M/1 freshness arithmetic, priced cost model, re-embedding runbook, citation-rate instrument |
 | 08 | `08-evaluation.md` | ✅ deep | 771 | Driving-test opener, bootstrap CI table (±8pp at n=100), six metrics all called "recall@5" from one run, judge attenuation (2q−1) verified against theory, paired McNemar vs unpaired power table (75% vs 6% at n=500), corrected LoCoMo/LongMemEval/BEAM specifics with links, deterministic-vs-stochastic CI gates, priced eval run |
 | 09 | `09-security-privacy-governance.md` | ✅ deep | 683 | Filing-cabinet opener, executed two-session poisoning chain (extract → store → retrieve → destructive action) and its blocked replay, persistence arithmetic 1−(1−p)^N, real SQLite/FTS5 erasure cascade showing 7 residue sites after a naive DELETE and the contentless-FTS5 bug that forces capture-before-delete, GDPR article map with Art. 12(3) clock, min-trust inheritance, incident time boxes |
-| 10 | `10-case-studies.md` | 🟡 draft | 344 | Needs: re-verified snapshots (this file churns fastest), architecture diagrams per system |
+| 10 | `10-case-studies.md` | ✅ deep | 1072 | Filing-cabinet opener, star-count arithmetic (39× spread uncorrelated with the property that matters), executed P1–P5 mechanism-probe audit over 5,699 source files in six live clones + the two bugs it hit (`valid_to` inside `invalid_tool_message`; grep finding docstrings not mechanisms), Letta's repo split and git-backed MemFS, Mem0's V3 ADD-only pipeline + `delete_linked=False` erasure residue + NOOP→NONE correction, Graphiti's four timestamps from `edges.py`, LangGraph's real `store_vectors` FK cascade, Cognee's declared-cardinality contradiction task, tiktoken-measured cost of always-in-context files (7.8× cache win), ChatGPT's own five-site erasure warning. Over the 900-line target: seven systems, each with a diagram + source evidence |
 | 11 | `11-projects-small.md` | 🟡 draft | 191 | Add acceptance tests that reuse ch04 scenario runner |
 | 12 | `12-projects-capstone.md` | 🟡 draft | 255 | Fine as-is; revisit after 07/08 deep pass |
 | 13 | `13-reading-list.md` | 🟡 draft | 186 | Add the papers cited in the deep passes (Mem0, Zep, Cursor semsearch) |
@@ -36,17 +36,14 @@ Single source of truth for what is written, what is still first-draft, and where
 
 ## Resume here
 
-**Next chapter to deepen: `10-case-studies.md`.** Then the practice files
-11–14. Deep passes done so far: 00–09.
+**Next chapter to deepen: `11-projects-small.md`.** Then 12–14. Deep passes done so far: 00–10.
 
 What each remaining file needs (keep the same shape as 04/05/06):
 
 - **07 — systems design.** DONE (2026-09-12).
 - **08 — evaluation.** DONE (2026-09-12).
 - **09 — security/privacy.** DONE (2026-09-12).
-- **10 — case studies.** Re-verify every product claim before writing (this file churns fastest).
-  One architecture diagram per system: MemGPT/Letta, Mem0, Zep/Graphiti, LangGraph Store/LangMem,
-  Cognee. State the snapshot date in the file.
+- **10 — case studies.** DONE (2026-09-12). Snapshot date stated in the file; re-run §10.1 to refresh.
 - **11–14 — practice.** Give every project observable acceptance criteria that reuse the ch04
   scenario runner and the ch05 bitemporal queries; add the papers cited across 04–09 to the reading
   list; add the write-path/temporal/security questions from the new failure tables to the design
@@ -89,3 +86,4 @@ What each remaining file needs (keep the same shape as 04/05/06):
 | 2026-09-12 | `85964f9` | Chapter 07 deep pass: verified RLS isolation lab, latency composition, capacity/shard/cost arithmetic, deadline bug |
 | 2026-09-12 | `dd98090` | Chapter 08 deep pass: verified statistics (CI widths, McNemar power, judge attenuation), metric-definition table, CI gate design |
 | 2026-09-12 | `c43276a` | Chapter 09 deep pass: executed poisoning chain, SQLite erasure-cascade residue measurement, trust inheritance |
+| 2026-09-12 | `d4b16b4` | Chapter 10 deep pass: executed source audit of six live clones, two probe bugs, Letta repo split + MemFS, Mem0 V3 ADD-only + delete_linked default, priced always-in-context files |
