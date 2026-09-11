@@ -24,7 +24,7 @@ Single source of truth for what is written, what is still first-draft, and where
 | 05 | `05-temporal-and-graph-memory.md` | ✅ deep | 680 | Two-clocks opener, SQLite-verified bitemporal queries (truth-vs-belief divergence), DB invariants, interval repair (overlap/gap/extend), honest graph decision rule, Graphiti properties cited from source |
 | 06 | `06-procedural-and-reflective.md` | ✅ deep | 527 | Recall arithmetic for why rules belong in context (0.9^N), rule precedence + token budget, `rule_health` for superstition, reflection quality gate, sleep-time-compute numbers and when it does NOT pay, trajectory distillation, hints≠permissions |
 | 07 | `07-systems-design.md` | ✅ deep | 995 | Library-counter opener, real PG16 RLS lab (owner + superuser bypass, fail-closed GUC, partition pruning under RLS), verified percentile composition, the `TaskGroup` deadline bug measured at 901ms vs 120ms budget, Little's-law capacity plan, shard-balance simulation, M/M/1 freshness arithmetic, priced cost model, re-embedding runbook, citation-rate instrument |
-| 08 | `08-evaluation.md` | 🟡 draft | 331 | Needs: LoCoMo/LongMemEval/BEAM specifics with links, a runnable harness, CI gate thresholds |
+| 08 | `08-evaluation.md` | ✅ deep | 771 | Driving-test opener, bootstrap CI table (±8pp at n=100), six metrics all called "recall@5" from one run, judge attenuation (2q−1) verified against theory, paired McNemar vs unpaired power table (75% vs 6% at n=500), corrected LoCoMo/LongMemEval/BEAM specifics with links, deterministic-vs-stochastic CI gates, priced eval run |
 | 09 | `09-security-privacy-governance.md` | 🟡 draft | 348 | Needs: injection→memory-poisoning worked attack, GDPR cascade checklist across derived state |
 | 10 | `10-case-studies.md` | 🟡 draft | 344 | Needs: re-verified snapshots (this file churns fastest), architecture diagrams per system |
 | 11 | `11-projects-small.md` | 🟡 draft | 191 | Add acceptance tests that reuse ch04 scenario runner |
@@ -36,13 +36,14 @@ Single source of truth for what is written, what is still first-draft, and where
 
 ## Resume here
 
-**Next chapter to deepen: `08-evaluation.md`.** Then 09, 10, then the practice files
-11–14. Deep passes done so far: 00–07.
+**Next chapter to deepen: `09-security-privacy-governance.md`.** Then 10, then the practice files
+11–14. Deep passes done so far: 00–08.
 
 What each remaining file needs (keep the same shape as 04/05/06):
 
 - **07 — systems design.** DONE (2026-09-12).
-- **08 — evaluation.** Cite LoCoMo ([arXiv:2402.17753](https://arxiv.org/abs/2402.17753)),
+- **08 — evaluation.** DONE (2026-09-12).
+- ~~08 old brief~~ Cite LoCoMo ([arXiv:2402.17753](https://arxiv.org/abs/2402.17753)),
   LongMemEval ([arXiv:2410.10813](https://arxiv.org/abs/2410.10813)), and the Mem0/Zep results
   already cited in 04/05. Build a runnable offline harness (recall@k + end-to-end judge), define CI
   regression gates, and be explicit that benchmark numbers are snapshots.
@@ -94,3 +95,4 @@ What each remaining file needs (keep the same shape as 04/05/06):
 | 2026-09-12 | `f28dbb1` | Chapter 05 deep pass: two clocks, SQL-verified bitemporal queries, interval repair |
 | 2026-09-12 | `017f19d` | Chapter 06 deep pass: procedural recall arithmetic, sleep-time compute, trajectory safety |
 | 2026-09-12 | `85964f9` | Chapter 07 deep pass: verified RLS isolation lab, latency composition, capacity/shard/cost arithmetic, deadline bug |
+| 2026-09-12 | `(pending)` | Chapter 08 deep pass: verified statistics (CI widths, McNemar power, judge attenuation), metric-definition table, CI gate design |
