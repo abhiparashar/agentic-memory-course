@@ -43,10 +43,6 @@ What each remaining file needs (keep the same shape as 04/05/06):
 
 - **07 — systems design.** DONE (2026-09-12).
 - **08 — evaluation.** DONE (2026-09-12).
-- ~~08 old brief~~ Cite LoCoMo ([arXiv:2402.17753](https://arxiv.org/abs/2402.17753)),
-  LongMemEval ([arXiv:2410.10813](https://arxiv.org/abs/2410.10813)), and the Mem0/Zep results
-  already cited in 04/05. Build a runnable offline harness (recall@k + end-to-end judge), define CI
-  regression gates, and be explicit that benchmark numbers are snapshots.
 - **09 — security/privacy.** One worked attack chain end to end: injected content → extracted
   "fact" → retrieved next session → action. Then the controls (stance checks from 4.3, the
   `self_instruction` reject from 6.4, trajectories-as-hints from 6.5). GDPR erasure cascade
@@ -95,4 +91,4 @@ What each remaining file needs (keep the same shape as 04/05/06):
 | 2026-09-12 | `f28dbb1` | Chapter 05 deep pass: two clocks, SQL-verified bitemporal queries, interval repair |
 | 2026-09-12 | `017f19d` | Chapter 06 deep pass: procedural recall arithmetic, sleep-time compute, trajectory safety |
 | 2026-09-12 | `85964f9` | Chapter 07 deep pass: verified RLS isolation lab, latency composition, capacity/shard/cost arithmetic, deadline bug |
-| 2026-09-12 | `(pending)` | Chapter 08 deep pass: verified statistics (CI widths, McNemar power, judge attenuation), metric-definition table, CI gate design |
+| 2026-09-12 | `dd98090` | Chapter 08 deep pass: verified statistics (CI widths, McNemar power, judge attenuation), metric-definition table, CI gate design |
