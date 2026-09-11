@@ -88,4 +88,4 @@ What each remaining file needs (keep the same shape as 04/05/06):
 | 2026-09-12 | `017f19d` | Chapter 06 deep pass: procedural recall arithmetic, sleep-time compute, trajectory safety |
 | 2026-09-12 | `85964f9` | Chapter 07 deep pass: verified RLS isolation lab, latency composition, capacity/shard/cost arithmetic, deadline bug |
 | 2026-09-12 | `dd98090` | Chapter 08 deep pass: verified statistics (CI widths, McNemar power, judge attenuation), metric-definition table, CI gate design |
-| 2026-09-12 | `(pending09)` | Chapter 09 deep pass: executed poisoning chain, SQLite erasure-cascade residue measurement, trust inheritance |
+| 2026-09-12 | `c43276a` | Chapter 09 deep pass: executed poisoning chain, SQLite erasure-cascade residue measurement, trust inheritance |
