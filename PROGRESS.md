@@ -16,21 +16,21 @@ Single source of truth for what is written, what is still first-draft, and where
 | # | File | Status | Lines | Notes on what a "deep" pass added / still needs |
 |---|---|---|---|---|
 | 00 | `00-README.md` | ✅ deep | 161 | Roadmap, 12-week plan, environment setup |
-| 00 | `00-why-memory.md` | ✅ deep | ~430 | The "why" in three registers + cost arithmetic |
-| 01 | `01-foundations.md` | ✅ deep | ~430 | Plain-English on-ramp added |
-| 02 | `02-context-engineering.md` | ✅ deep | ~500 | Plain-English on-ramp added |
+| 00 | `00-why-memory.md` | ✅ deep | 390 | The "why" in three registers + cost arithmetic |
+| 01 | `01-foundations.md` | ✅ deep | 355 | Plain-English on-ramp added |
+| 02 | `02-context-engineering.md` | ✅ deep | 523 | Plain-English on-ramp added |
 | 03 | `03-retrieval-fundamentals.md` | ✅ deep | 563 | Two-librarians opener, pgvector `ef_search` curve, filtered-ANN percolation, Cursor evidence |
-| 04 | `04-memory-write-path.md` | ✅ deep | 1064 | Notebook opener, worked extraction example, calibration script, supersession trace, cost model, 12 scenarios, failure table |
-| 05 | `05-temporal-and-graph-memory.md` | 🟡 draft | ~430 | Needs: plain-words opener on two clocks, bi-temporal SQL worked example, Graphiti invalidation walkthrough, entity-resolution numbers |
-| 06 | `06-procedural-and-reflective.md` | 🟡 draft | ~400 | Needs: reflection loop opener, Generative Agents + sleep-time-compute evidence, a runnable reflection job |
-| 07 | `07-systems-design.md` | 🟡 draft | ~470 | Needs: latency budget table with real p99 arithmetic, sharding worked example, backfill runbook |
-| 08 | `08-evaluation.md` | 🟡 draft | ~370 | Needs: LoCoMo/LongMemEval/BEAM specifics with links, a runnable harness, CI gate thresholds |
-| 09 | `09-security-privacy-governance.md` | 🟡 draft | ~400 | Needs: injection→memory-poisoning worked attack, GDPR cascade checklist across derived state |
-| 10 | `10-case-studies.md` | 🟡 draft | ~400 | Needs: re-verified snapshots (this file churns fastest), architecture diagrams per system |
-| 11 | `11-projects-small.md` | 🟡 draft | ~200 | Add acceptance tests that reuse ch04 scenario runner |
-| 12 | `12-projects-capstone.md` | 🟡 draft | ~290 | Fine as-is; revisit after 07/08 deep pass |
-| 13 | `13-reading-list.md` | 🟡 draft | ~250 | Add the papers cited in the deep passes (Mem0, Zep, Cursor semsearch) |
-| 14 | `14-design-review-playbook.md` | 🟡 draft | ~250 | Add write-path questions from 04.12 failure table |
+| 04 | `04-memory-write-path.md` | ✅ deep | 1107 | Notebook opener, gate cascade (with the two regex bugs it fixes), worked extraction example, threshold calibration script, supersession trace, destructive budget, confidence calibration, cost model, 12 scenarios + gate recall set, failure table |
+| 05 | `05-temporal-and-graph-memory.md` | 🟡 draft | 405 | Needs: plain-words opener on two clocks, bi-temporal SQL worked example, Graphiti invalidation walkthrough, entity-resolution numbers |
+| 06 | `06-procedural-and-reflective.md` | 🟡 draft | 355 | Needs: reflection loop opener, Generative Agents + sleep-time-compute evidence, a runnable reflection job |
+| 07 | `07-systems-design.md` | 🟡 draft | 415 | Needs: latency budget table with real p99 arithmetic, sharding worked example, backfill runbook |
+| 08 | `08-evaluation.md` | 🟡 draft | 331 | Needs: LoCoMo/LongMemEval/BEAM specifics with links, a runnable harness, CI gate thresholds |
+| 09 | `09-security-privacy-governance.md` | 🟡 draft | 348 | Needs: injection→memory-poisoning worked attack, GDPR cascade checklist across derived state |
+| 10 | `10-case-studies.md` | 🟡 draft | 344 | Needs: re-verified snapshots (this file churns fastest), architecture diagrams per system |
+| 11 | `11-projects-small.md` | 🟡 draft | 191 | Add acceptance tests that reuse ch04 scenario runner |
+| 12 | `12-projects-capstone.md` | 🟡 draft | 255 | Fine as-is; revisit after 07/08 deep pass |
+| 13 | `13-reading-list.md` | 🟡 draft | 186 | Add the papers cited in the deep passes (Mem0, Zep, Cursor semsearch) |
+| 14 | `14-design-review-playbook.md` | 🟡 draft | 190 | Add write-path questions from 04.12 failure table |
 
 ---
 

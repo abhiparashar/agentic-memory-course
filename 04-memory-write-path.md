@@ -207,21 +207,34 @@ ALL EXCHANGES  100%
 ```
 
 ```python
-MARKERS = re.compile(
-    r"\b(i (am|'m|was|have|had|work|live|prefer|like|hate|need|use|own)|"
-    r"my |remember|always|never|from now on|actually|no,? i|instead of|stop )", re.I)
+PRONOUN   = r"\bi\s+\w+|\bi'(m|ve|ll|d)\b|\bmy\b|\bwe\s+\w+"
+MARKER    = r"\bremember\b|\balways\b|\bnever\b|\bfrom now on\b|\bactually\b|\binstead of\b|\bstop\b|\bprefer\b"
+SELF_VERB = (r"\b(moved|relocated|started|joined|quit|left|switched|bought|sold|married|graduated|"
+             r"live|living|work|working|use|using|own|hate|love|allergic|based)\b")
+CANDIDATE = re.compile(f"({PRONOUN}|{MARKER}|{SELF_VERB})", re.I)
 
 def worth_extracting(exchange) -> bool:
     ok, _ = prefilter(exchange.user_text)
-    return ok and bool(MARKERS.search(exchange.user_text))
+    return ok and bool(CANDIDATE.search(exchange.user_text))
 ```
 
-Two warnings, both learned the expensive way:
+That regex is the *third* version, and the two bugs it fixes are worth more than the regex itself.
+Both were found by running a 14-line labelled set through it, which takes two minutes:
 
-- **Measure the gate's recall, not just its precision.** A gate that drops 70% of traffic is worth
+| Dropped exchange | Why the earlier gate missed it |
+|---|---|
+| `"I don't drink alcohol"` | the first version listed verbs (`i am\|i work\|i live…`) and *contractions were not verbs*. The gate silently discarded every negated statement — the exact class of fact that is most dangerous to get wrong (see 4.3). |
+| `"Finally moved to Bangalore last month for the Acme job"` | **elided subject.** People drop "I" constantly in chat. A pronoun-anchored gate loses all of it, so `SELF_VERB` exists to catch life-event verbs with no subject attached. |
+
+Three warnings, all learned the expensive way:
+
+- **Measure the gate's recall, not its precision.** A gate that drops 70% of traffic is worth
   nothing if it drops the 5% of exchanges carrying real facts. Hand-label 200 exchanges, run the
-  gate, and look only at the false negatives. Tune until false negatives are near zero; you can
-  afford false positives, because extraction is allowed to return an empty list.
+  gate, look **only at the false negatives**, and tune until they are zero. False positives are
+  free — extraction is allowed to return an empty list.
+- **A gate bug is invisible.** A broken extractor produces wrong memories you can see; a broken
+  gate produces *absence*, and absence does not show up in any dashboard. This is why the labelled
+  set is not optional, and why it lives in CI (4.11) next to the scenarios.
 - **The gate is not a security control.** Someone will phrase a secret without matching your regex.
   The deny-list runs again after extraction, on the extracted claim text (chapter 09).
 
@@ -1007,15 +1020,44 @@ def run_scenarios(writer, store, scenarios) -> dict:
     return {"total": len(scenarios), "failed": len(failures), "detail": failures}
 ```
 
+The cheapest test in the whole chapter, and the one nobody writes — the **gate recall set** from
+4.2. It needs no LLM, no store, and no fixtures, so it runs in milliseconds on every commit:
+
+```python
+GATE_SET = [                                  # (text, should_reach_extractor)
+    ("I don't drink alcohol",                                   True),   # negation via contraction
+    ("I've been using vim for years",                           True),
+    ("I can't eat peanuts",                                     True),
+    ("My sister still lives in Pune",                           True),
+    ("Finally moved to Bangalore last month for the Acme job",   True),  # elided subject
+    ("Actually, no — the cousin, not the sister",                True),  # correction
+    ("from now on answer in 3 bullets",                          True),  # instruction
+    ("What's the weather in Pune?",                             False),
+    ("Is it raining in Mumbai?",                                False),
+    ("explain HNSW to me",                                      False),
+    ("write a python function that reverses a list",            False),
+    ("Sure, thanks!",                                           False),
+]
+
+def test_gate_has_no_false_negatives():
+    missed = [t for t, want in GATE_SET if want and not worth_extracting(Exchange(user_text=t))]
+    assert missed == [], f"gate silently dropped durable facts: {missed}"
+```
+
+Every row in that list is a bug that was actually shipped by some memory system, and the first five
+are the ones that recur. Add a row every time you find a dropped fact in production; the list is a
+regression record, not a fixture.
+
 Alongside the scenarios, measure the extractor like a classifier. Hand-label 20 real conversations
 ("what *should* be remembered here?") and compute precision and recall of extracted claims against
 that gold set. Suggested release gates, to be tightened as you go:
 
 ```
-extractor precision ≥ 0.85      # below this your store fills with junk that never gets cleaned
-extractor recall    ≥ 0.70      # missing facts is recoverable — the user will say it again
-scenario suite       100%       # behavioural tests are pass/fail, no partial credit
-op_mix delete share ≤ baseline × 1.5
+gate false negatives  = 0       # non-negotiable: a dropped fact is an invisible failure
+extractor precision  ≥ 0.85     # below this your store fills with junk that never gets cleaned
+extractor recall     ≥ 0.70     # missing facts is recoverable — the user will say it again
+scenario suite        100%      # behavioural tests are pass/fail, no partial credit
+op_mix delete share  ≤ baseline × 1.5
 ```
 
 Run this on **every extractor prompt change, every model upgrade, and in CI**. Treat it exactly like
@@ -1028,6 +1070,7 @@ most real bugs; scenario 11 is the one that becomes a security incident if you s
 
 | Symptom | Root cause | Fix |
 |---|---|---|
+| "It never learned something I clearly said" | salience gate false negative (negation, elided subject) | 4.2 gate recall set, gated in CI |
 | Store grows linearly with turns | no salience gate | 4.2 typed categories + gate cascade |
 | "It keeps forgetting my instructions" | instructions stored as low-priority preferences | 4.3 `stance`, boosted retrieval weight |
 | Agent believes two contradictory facts | vector-only candidate generation | 4.4 `fact_key` + single-valued predicate constraint |

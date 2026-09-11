@@ -10,6 +10,9 @@ open-source tools (Mem0, Zep, Letta, ...) read as familiar rather than magic by 
 **Start here → [`00-README.md`](./00-README.md)** — full roadmap, 12-week study plan, and
 environment setup.
 
+**Writing status → [`PROGRESS.md`](./PROGRESS.md)** — which chapters have had the deep pass, what
+each remaining one still needs, and where to resume.
+
 ---
 
 ## Contents

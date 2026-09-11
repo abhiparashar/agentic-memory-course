@@ -48,6 +48,7 @@ over time, how you delete them when a user asks, and how you prove the whole thi
 | `12-projects-capstone.md` | Three capstones, each 2–6 weeks, spec'd like real design docs | — |
 | `13-reading-list.md` | Books, papers, repos, courses — ordered, annotated | — |
 | `14-design-review-playbook.md` | The questions I ask in a memory design review, plus a rubric | 30 min |
+| `PROGRESS.md` | Writing status per chapter, standing style rules, and where to resume | — |
 
 ---
 
