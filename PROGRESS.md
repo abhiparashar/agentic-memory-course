@@ -21,8 +21,8 @@ Single source of truth for what is written, what is still first-draft, and where
 | 02 | `02-context-engineering.md` | ✅ deep | 523 | Plain-English on-ramp added |
 | 03 | `03-retrieval-fundamentals.md` | ✅ deep | 563 | Two-librarians opener, pgvector `ef_search` curve, filtered-ANN percolation, Cursor evidence |
 | 04 | `04-memory-write-path.md` | ✅ deep | 1107 | Notebook opener, gate cascade (with the two regex bugs it fixes), worked extraction example, threshold calibration script, supersession trace, destructive budget, confidence calibration, cost model, 12 scenarios + gate recall set, failure table |
-| 05 | `05-temporal-and-graph-memory.md` | 🟡 draft | 405 | Needs: plain-words opener on two clocks, bi-temporal SQL worked example, Graphiti invalidation walkthrough, entity-resolution numbers |
-| 06 | `06-procedural-and-reflective.md` | 🟡 draft | 355 | Needs: reflection loop opener, Generative Agents + sleep-time-compute evidence, a runnable reflection job |
+| 05 | `05-temporal-and-graph-memory.md` | ✅ deep | 680 | Two-clocks opener, SQLite-verified bitemporal queries (truth-vs-belief divergence), DB invariants, interval repair (overlap/gap/extend), honest graph decision rule, Graphiti properties cited from source |
+| 06 | `06-procedural-and-reflective.md` | ✅ deep | 527 | Recall arithmetic for why rules belong in context (0.9^N), rule precedence + token budget, `rule_health` for superstition, reflection quality gate, sleep-time-compute numbers and when it does NOT pay, trajectory distillation, hints≠permissions |
 | 07 | `07-systems-design.md` | 🟡 draft | 415 | Needs: latency budget table with real p99 arithmetic, sharding worked example, backfill runbook |
 | 08 | `08-evaluation.md` | 🟡 draft | 331 | Needs: LoCoMo/LongMemEval/BEAM specifics with links, a runnable harness, CI gate thresholds |
 | 09 | `09-security-privacy-governance.md` | 🟡 draft | 348 | Needs: injection→memory-poisoning worked attack, GDPR cascade checklist across derived state |
@@ -36,22 +36,32 @@ Single source of truth for what is written, what is still first-draft, and where
 
 ## Resume here
 
-**Next chapter to deepen: `05-temporal-and-graph-memory.md`.**
+**Next chapter to deepen: `07-systems-design.md`.** Then 08, 09, 10, then the practice files
+11–14. Deep passes done so far: 00–06.
 
-It is the natural continuation — chapter 04 ends by promising that `valid_from` and `created_at`
-become two independent clocks, and exercise 5 hands chapter 05 a query to extend.
+What each remaining file needs (keep the same shape as 04/05/06):
 
-Target shape for the 05 deep pass (same as 03 and 04):
-
-1. `5.0 In plain words` — the two clocks (when it was true vs when we learned it), explained with a
-   single everyday example before any SQL.
-2. A bi-temporal table + the four canonical queries (current belief, belief as of date T, truth as
-   of date T, full audit trail) with runnable SQL.
-3. Graphiti/Zep edge invalidation walked through step by step, citing
-   [arXiv:2501.13956](https://arxiv.org/abs/2501.13956).
-4. Entity resolution at graph scale — where 4.4's scoring is reused, and what changes.
-5. When a graph is *not* worth it (the honest section; most systems do not need one).
-6. Failure-mode table + exercises that build on the 04 store.
+- **07 — systems design.** `7.0 In plain words` (the memory service as a library counter: one
+  request, a 120ms budget, and what you cut when you run out). Verified latency-budget arithmetic,
+  a worked capacity plan for the 7.1 workload, RLS + repository-layer isolation with the CI test,
+  the re-embedding migration runbook, the citation-based "is memory even used" metric, failure-mode
+  table. Existing draft already has good bones for 7.1–7.10 — deepen, do not discard.
+- **08 — evaluation.** Cite LoCoMo ([arXiv:2402.17753](https://arxiv.org/abs/2402.17753)),
+  LongMemEval ([arXiv:2410.10813](https://arxiv.org/abs/2410.10813)), and the Mem0/Zep results
+  already cited in 04/05. Build a runnable offline harness (recall@k + end-to-end judge), define CI
+  regression gates, and be explicit that benchmark numbers are snapshots.
+- **09 — security/privacy.** One worked attack chain end to end: injected content → extracted
+  "fact" → retrieved next session → action. Then the controls (stance checks from 4.3, the
+  `self_instruction` reject from 6.4, trajectories-as-hints from 6.5). GDPR erasure cascade
+  checklist across every derived artefact (vectors, BM25, graph edges, consolidations, caches,
+  backups) — this is the section people get wrong.
+- **10 — case studies.** Re-verify every product claim before writing (this file churns fastest).
+  One architecture diagram per system: MemGPT/Letta, Mem0, Zep/Graphiti, LangGraph Store/LangMem,
+  Cognee. State the snapshot date in the file.
+- **11–14 — practice.** Give every project observable acceptance criteria that reuse the ch04
+  scenario runner and the ch05 bitemporal queries; add the papers cited across 04–09 to the reading
+  list; add the write-path/temporal/security questions from the new failure tables to the design
+  review playbook.
 
 ---
 
@@ -70,6 +80,9 @@ Target shape for the 05 deep pass (same as 03 and 04):
 6. **Every chapter ends with** a failure-mode table (symptom → cause → fix) and exercises with
    observable acceptance criteria.
 7. **One agent, one chapter at a time**, committed separately with a descriptive message.
+8. **Verify before you write.** Run the snippet / SQL / arithmetic in a scratch kernel and paste the
+   *actual* output into the chapter. Bugs found while verifying (see 4.2's gate regex, 5.2's
+   truth-vs-belief divergence) become the most valuable paragraphs in the file.
 
 ---
 
@@ -81,4 +94,6 @@ Target shape for the 05 deep pass (same as 03 and 04):
 | 2026-09-10 | `fd736a6` | Root README as GitHub landing page |
 | 2026-09-10 | `214cbba` | Chapter 00 (why memory) + plain-English on-ramps for 01–02 |
 | 2026-09-10 | `cd84d3f` | Chapter 03 deep pass: HNSW tuning, filtered ANN, Cursor evidence |
-| 2026-09-10 | _this_ | Chapter 04 deep pass + this progress tracker |
+| 2026-09-10 | `d847689` | Chapter 04 deep pass + this progress tracker |
+| 2026-09-12 | `f28dbb1` | Chapter 05 deep pass: two clocks, SQL-verified bitemporal queries, interval repair |
+| 2026-09-12 | `017f19d` | Chapter 06 deep pass: procedural recall arithmetic, sleep-time compute, trajectory safety |
