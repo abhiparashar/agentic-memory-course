@@ -94,4 +94,4 @@ maintenance, and each item has a script or section that performs it:
 | 2026-09-12 | `97a241e` | Chapter 11 deep pass: `memlab` harness, five verified bugs (guard recall 1/6, negative IDF, zero-score arm, ignored assertions, mutation score 2/5), measured project baselines |
 | 2026-09-12 | `4216838` | Chapter 12 deep pass: capstone scoping arithmetic, load-test sizing, measured repo churn → hash invalidation, handoff/contamination arithmetic |
 | 2026-09-12 | `aab33f8` | Chapter 13 deep pass: mechanical citation verification (3 defects found), measured arXiv firehose, dependency-ordered core sequence |
-| 2026-09-12 | `pending` | Chapter 14 deep pass: defect-record-ordered question set (37 Qs), review-coverage arithmetic, scorable rubric with evidence column — **course complete, 00–14 all deep** |
+| 2026-09-12 | `4810b53` | Chapter 14 deep pass: defect-record-ordered question set (37 Qs), review-coverage arithmetic, scorable rubric with evidence column — **course complete, 00–14 all deep** |
