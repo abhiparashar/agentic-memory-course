@@ -30,28 +30,28 @@ Single source of truth for what is written, what is still first-draft, and where
 | 11 | `11-projects-small.md` | ✅ deep | 828 | Logbook opener, `memlab` shared harness (triple + bootstrap CI + one metric definition + mutation score), measured 500-turn strategy table (23.7× SendAll vs window, 16.7× vs window+summary, fact leaves window at turn 15/25, 1.92× messages-vs-exchanges bug), the compaction-guard regex that PASSES while losing 5 of 6 identifiers (recall 1/6), BM25 negative-Robertson-IDF ranking the gold memory below a restaurant doc, zero-score arm voting in RRF, six recall@5 definitions spanning 0.286–1.000 on one run, offline scenario harness 8/12 → 6/12-verified → 12/12 with mutation score 2/5 → 5/5 via positive controls, bitemporal 6/6 vs flat 1/6 NOT-EXPRESSIBLE, inline-vs-background p95 2.32× and the 26% p95-addition error, synthetic-compression caveat, eval sizing (n=10 inverts 23% of runs) |
 | 12 | `12-projects-capstone.md` | ✅ deep | 671 | Restaurant-vs-dish opener, scoping arithmetic (143 h needed vs 60–90 h evenings = 1.6–2.4× over, with a cut order), load-test sizing (a 100-request test passes a truly-164ms-p99 system 44% of the time; 60k samples gives ±2ms), Little's-law pool sizing + int8 storage table (337→107 GB at 50M rows, 13.5 TB at 2B), design doc with a required number per section, measured churn study of mem0/graphiti/langgraph (20–63% of files stale at 90 days; mean-rate Poisson TTL over-invalidates 2.1–2.6× because the top 10% of files carry 37–56% of edits) → hash/symbol invalidation, `repeated_dead_ends` defined in code, handoff fidelity requirement p ≥ 0.928 for 80% over 3 hops, contamination sim (85% → 0% blast radius above trust 1), rubric-mapping table, capstone failure modes, pre-week-one exercises |
 | 13 | `13-reading-list.md` | ✅ deep | 577 | Map-cabinet opener with the measured firehose (arXiv "memory"+"agent" abstracts: 152→219→359→1,080→2,603 Jan–Aug 2026 = 325/month = 10.7/day; 217 h/month to read vs 4 h available = 54× over), §13.1 mechanical citation verification (runnable arXiv-API + Crossref script; 13/13 IDs for 00–12, 24/24 course-wide; 33/38 non-arXiv URLs return 200 and the other five are 302/403 bot-blocks, i.e. link-checker false positives) and the three defects it found (RRF is 2 pages not 4; ACE cited with no ID — venue claim turned out right but unverifiable; WorldLines "missing" only because a title search failed on a subtitle), six-paper core sequence with a dependency diagram and a "what it does not say" note per entry, eight previously ID-less papers resolved (DPR/ColBERT/ColBERTv2/HNSW/GraphRAG/ACE/HaluMem/A-MEM) plus Titans/RealMem/WorldLines/BEAM, Mem0's ECAI 2025 record confirmed via DOI 10.3233/FAIA251160, vendor-doc reading table, 20-minute triage rubric, decisions log, failure-mode table, 7 exercises |
-| 14 | `14-design-review-playbook.md` | 🟡 draft | 190 | Add write-path questions from 04.12 failure table |
+| 14 | `14-design-review-playbook.md` | ✅ deep | 562 | Home-inspection opener, the course's own defect record (9 components implemented from scratch, 9 defective first attempts, 23 defects, tabulated with chapter refs) as the basis for question ordering, review-coverage arithmetic (8 random questions of 25 areas find ≥1 of 4 defects only 81.2% of the time; 17 needed for 99.4%), retrofit-cost ordering (one month without `derived_from` = 60M unattributable rows; impossible if episodes were discarded), 37 questions each with weak/strong answer + the bluff-catching follow-up + chapter ref (new: Q10–Q12 time, Q28 "can your suite fail?", Q30–Q33 measurement protocol, Q36–Q37 evidence hygiene), a 30/60/90-minute time-boxed script, the eight-question short review ordered by defect record, extended rubric with an evidence column + runnable `score()` that downgrades unevidenced 2s and names blockers, reviewer-agreement attenuation (2q−1) as a caution against ranking by totals, red/green flags, 10-row review failure-mode table, 6 exercises, and a fifth closing discipline: measure your instruments |
 
 ---
 
 ## Resume here
 
-**Next chapter to deepen: `14-design-review-playbook.md`.** Deep passes done so far: 00–13.
+**Nothing pending. Deep passes done: 00–14 (all chapters).** Re-entry points if you pick this up
+again: re-run §10.1's audit and §12.3's churn study (both are dated snapshots), re-run §13.1's
+citation script before publishing any new claim, and refresh the vendor prices used in §7.8, §11.2
+and §12.2.
 
-What each remaining file needs (keep the same shape as 04/05/06):
+Per-file deep-pass briefs are retired: 00–14 are all done (2026-09-10 → 2026-09-12). What remains is
+maintenance, and each item has a script or section that performs it:
 
-- **07 — systems design.** DONE (2026-09-12).
-- **08 — evaluation.** DONE (2026-09-12).
-- **09 — security/privacy.** DONE (2026-09-12).
-- **10 — case studies.** DONE (2026-09-12). Snapshot date stated in the file; re-run §10.1 to refresh.
-- **11 — small projects.** DONE (2026-09-12). Five verified bugs; `memlab` harness is now the
-  contract the capstones and the playbook should reference.
-- **12 — capstones.** DONE (2026-09-12). Churn study is a snapshot; re-run §12.3 on the target repo.
-- **13 — reading list.** DONE (2026-09-12). Citation-verification script is in §13.1; re-run it
-  before any future claim about a paper.
-- **14 — playbook.** Add the write-path/temporal/security questions from the new failure tables, the
-  "can your suite fail?" question §11.4 earned, the measurement-protocol questions §12.2 earned, and
-  the citation/evidence questions §13.1 earned.
+- **Dated snapshots.** §10.1's six-clone source audit and §12.3's three-repo churn study both state
+  their snapshot date. Re-run, do not patch.
+- **Citations.** §13.1's arXiv-API + Crossref script checks every identifier (24/24 as of
+  2026-09-12). Run it before adding any claim about a paper.
+- **Prices.** §7.8, §11.2 and §12.2 all carry vendor rates with a retrieval date. Re-derive rather
+  than trusting the printed totals.
+- **Defect record.** §14.0's table is the course's own verification history (9 areas, 23 defects).
+  Any future pass that finds a bug adds a row there and a question to §14.3.
 
 ---
 
@@ -94,3 +94,4 @@ What each remaining file needs (keep the same shape as 04/05/06):
 | 2026-09-12 | `97a241e` | Chapter 11 deep pass: `memlab` harness, five verified bugs (guard recall 1/6, negative IDF, zero-score arm, ignored assertions, mutation score 2/5), measured project baselines |
 | 2026-09-12 | `4216838` | Chapter 12 deep pass: capstone scoping arithmetic, load-test sizing, measured repo churn → hash invalidation, handoff/contamination arithmetic |
 | 2026-09-12 | `aab33f8` | Chapter 13 deep pass: mechanical citation verification (3 defects found), measured arXiv firehose, dependency-ordered core sequence |
+| 2026-09-12 | `pending` | Chapter 14 deep pass: defect-record-ordered question set (37 Qs), review-coverage arithmetic, scorable rubric with evidence column — **course complete, 00–14 all deep** |
