@@ -93,4 +93,4 @@ What each remaining file needs (keep the same shape as 04/05/06):
 | 2026-09-12 | `d4b16b4` | Chapter 10 deep pass: executed source audit of six live clones, two probe bugs, Letta repo split + MemFS, Mem0 V3 ADD-only + delete_linked default, priced always-in-context files |
 | 2026-09-12 | `97a241e` | Chapter 11 deep pass: `memlab` harness, five verified bugs (guard recall 1/6, negative IDF, zero-score arm, ignored assertions, mutation score 2/5), measured project baselines |
 | 2026-09-12 | `4216838` | Chapter 12 deep pass: capstone scoping arithmetic, load-test sizing, measured repo churn → hash invalidation, handoff/contamination arithmetic |
-| 2026-09-12 | `pending` | Chapter 13 deep pass: mechanical citation verification (3 defects found), measured arXiv firehose, dependency-ordered core sequence |
+| 2026-09-12 | `aab33f8` | Chapter 13 deep pass: mechanical citation verification (3 defects found), measured arXiv firehose, dependency-ordered core sequence |
